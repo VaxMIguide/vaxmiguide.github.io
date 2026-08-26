@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vaccinazioni e terapie immunomodulanti</title>
+  <style>
+    :root {
+      --bg: #f4f7f8;
+      --card: #ffffff;
+      --text: #17333a;
+      --muted: #667b80;
+      --border: #dce6e8;
+      --accent: #246b73;
+      --accent-soft: #e9f3f4;
+      --warning: #8a5b08;
+      --warning-bg: #fff7df;
+      --info-bg: #eef5fb;
+      --info: #315d7b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .shell {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 48px 20px 64px;
+    }
+    header { margin-bottom: 28px; }
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      max-width: 720px;
+      font-size: 17px;
+    }
+    .search-panel, .card, .disclaimer {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(22, 52, 58, .05);
+    }
+    .search-panel {
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 750;
+      color: var(--muted);
+      margin: 0 0 7px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .search-wrap { position: relative; margin-bottom: 16px; }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: .6;
+    }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      padding: 13px 14px;
+      font-size: 16px;
+      color: var(--text);
+      outline: none;
+      transition: .15s ease;
+    }
+    input { padding-left: 42px; }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(36, 107, 115, .12);
+    }
+    .result {
+      display: none;
+      animation: fade .22s ease;
+    }
+    .result.visible { display: block; }
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card {
+      padding: 26px;
+      margin-bottom: 18px;
+    }
+    .drug-head {
+      display: flex;
+      gap: 14px;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+    }
+    .drug-title {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: -0.02em;
+    }
+    .drug-class {
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .verified {
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 999px;
+      padding: 7px 10px;
+    }
+    .section { margin: 0 0 24px; }
+    .section:last-child { margin-bottom: 0; }
+    .section h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+    .section p { margin: 0; color: #385057; }
+    .notice {
+      padding: 16px 17px;
+      border-radius: 13px;
+      margin-top: 10px;
+    }
+    .warning { background: var(--warning-bg); color: var(--warning); }
+    .info { background: var(--info-bg); color: var(--info); }
+    .notice strong { color: inherit; }
+    .timeline-wrap {
+      background: #f8fafb;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 12px;
+      overflow-x: auto;
+    }
+    .timeline {
+      min-width: 600px;
+      display: grid;
+      grid-template-columns: auto 1fr auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .node {
+      text-align: center;
+      padding: 9px 11px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+    .node.vaccine {
+      background: var(--warning-bg);
+      border-color: #ecd89d;
+    }
+    .line {
+      height: 2px;
+      background: #b7c9cc;
+      position: relative;
+    }
+    .line:after {
+      content: "›";
+      position: absolute;
+      right: -2px;
+      top: 50%;
+      transform: translateY(-54%);
+      color: #82989d;
+      font-size: 20px;
+    }
+    .timeline-labels {
+      min-width: 600px;
+      display: grid;
+      grid-template-columns: auto 1fr auto 1fr auto;
+      gap: 10px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+    details {
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 750;
+      color: var(--accent);
+    }
+    details p, details ul {
+      color: #425a60;
+      font-size: 14px;
+    }
+    a { color: var(--accent); }
+    .source-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px !important;
+    }
+    .disclaimer {
+      padding: 18px 20px;
+      color: #50666c;
+      font-size: 13px;
+    }
+    .disclaimer strong { color: var(--text); }
+    .empty {
+      padding: 16px;
+      border-radius: 12px;
+      background: #f8fafb;
+      color: var(--muted);
+      font-size: 14px;
+      display: none;
+    }
+    @media (max-width: 640px) {
+      .shell { padding-top: 28px; }
+      .drug-head { flex-direction: column; }
+      .verified { white-space: normal; }
+      .card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="eyebrow">PROTOTIPO · CONSULTAZIONE CLINICA</div>
+      <h1>Vaccinazioni e terapie immunomodulanti</h1>
+      <p class="subtitle">
+        Sintesi delle principali precauzioni vaccinali associate a terapie biologiche e immunomodulanti.
+        Le indicazioni devono essere sempre contestualizzate e verificate sulle fonti aggiornate.
+      </p>
+    </header>
+
+    <section class="search-panel">
+      <label class="field-label" for="drugSearch">Farmaco</label>
+      <div class="search-wrap">
+        <span class="search-icon">🔎</span>
+        <input id="drugSearch" list="drugList" placeholder="Cerca farmaco o principio attivo..." autocomplete="off">
+        <datalist id="drugList">
+          <option value="Rituximab"></option>
+        </datalist>
+      </div>
+
+      <label class="field-label" for="vaccineSelect">Vaccino di interesse</label>
+      <select id="vaccineSelect" disabled>
+        <option value="">Seleziona vaccino</option>
+        <option value="all">Indicazioni generali</option>
+        <option value="mpr">MPR — morbillo, parotite, rosolia</option>
+      </select>
+
+      <div id="emptyMessage" class="empty">
+        Nel prototipo è disponibile solo <strong>Rituximab</strong>.
+      </div>
+    </section>
+
+    <section id="result" class="result">
+      <article class="card">
+        <div class="drug-head">
+          <div>
+            <h2 class="drug-title">Rituximab</h2>
+            <div class="drug-class">Anticorpo monoclonale anti-CD20 · terapia B-cell depleting</div>
+          </div>
+          <div class="verified">Scheda verificata · agosto 2026</div>
+        </div>
+
+        <div id="generalContent">
+          <section class="section">
+            <h3>Indicazioni generali sulla vaccinazione</h3>
+            <p>
+              Rituximab determina una deplezione dei linfociti B e può ridurre la risposta immunitaria ai vaccini.
+              Prima di iniziare la terapia è opportuno verificare lo stato vaccinale e, quando possibile,
+              completare le vaccinazioni previste secondo le raccomandazioni vigenti.
+            </p>
+          </section>
+          <section class="section">
+            <h3>Vaccini vivi attenuati</h3>
+            <div class="notice warning">
+              <strong>Particolare cautela.</strong> La scheda tecnica di rituximab non raccomanda la vaccinazione
+              con vaccini virali vivi durante il trattamento o finché persiste la deplezione periferica dei linfociti B.
+            </div>
+          </section>
+        </div>
+
+        <div id="mprContent" style="display:none">
+          <section class="section">
+            <h3>MPR · morbillo, parotite, rosolia</h3>
+            <p><strong>Tipo:</strong> vaccino vivo attenuato.</p>
+            <div class="notice warning">
+              <strong>Precauzione durante terapia con rituximab.</strong>
+              La vaccinazione con vaccini virali vivi non è raccomandata durante il trattamento o finché
+              persiste la deplezione periferica dei linfociti B.
+            </div>
+          </section>
+
+          <section class="section">
+            <h3>Timing rispetto al trattamento</h3>
+            <p>
+              Nel contesto delle malattie reumatiche e muscoloscheletriche, la linea guida ACR 2022 indica,
+              qualora un vaccino vivo attenuato sia necessario, un intervallo di riferimento di
+              <strong>6 mesi dopo rituximab prima della vaccinazione</strong> e di
+              <strong>4 settimane dopo la vaccinazione prima di riprendere rituximab</strong>.
+            </p>
+
+            <div class="timeline-wrap" aria-label="Schema temporale indicativo">
+              <div class="timeline">
+                <div class="node">Rituximab</div>
+                <div class="line"></div>
+                <div class="node vaccine">MPR</div>
+                <div class="line"></div>
+                <div class="node">Rituximab</div>
+              </div>
+              <div class="timeline-labels">
+                <div>ultima somministrazione</div>
+                <div>≈ 6 mesi*</div>
+                <div>vaccinazione</div>
+                <div>≥ 4 settimane*</div>
+                <div>eventuale ripresa</div>
+              </div>
+            </div>
+
+            <p class="source-note">
+              *Esempio derivato dalla linea guida ACR per pazienti con malattie reumatiche e muscoloscheletriche:
+              non rappresenta una regola universale per tutte le indicazioni di rituximab.
+            </p>
+          </section>
+
+          <section class="section">
+            <h3>Come interpretare queste tempistiche</h3>
+            <div class="notice info">
+              Il timing deve essere valutato considerando indicazione clinica di rituximab, stato immunologico,
+              eventuale recupero dei linfociti B, terapie concomitanti, urgenza della vaccinazione
+              e rischio di esposizione alla malattia prevenibile.
+            </div>
+          </section>
+
+          <details>
+            <summary>Perché questa precauzione?</summary>
+            <p>
+              La terapia anti-CD20 riduce i linfociti B circolanti e può alterare la capacità di sviluppare
+              una risposta immune adeguata. Per i vaccini vivi, oltre al problema dell'efficacia,
+              è rilevante anche il profilo di sicurezza nel paziente immunodepresso.
+            </p>
+          </details>
+
+          <details>
+            <summary>Fonti</summary>
+            <ul>
+              <li>
+                <strong>Summary of Product Characteristics di rituximab/Truxima</strong>:
+                vaccinazioni da aggiornare prima della terapia; vaccini vivi non raccomandati durante rituximab
+                o durante la deplezione periferica delle cellule B.
+              </li>
+              <li>
+                <strong>2022 American College of Rheumatology Guideline for Vaccinations in Patients
+                With Rheumatic and Musculoskeletal Diseases</strong>: tabella sulla gestione degli immunosoppressori
+                in caso di vaccini vivi attenuati (rituximab: 6 mesi prima, 4 settimane dopo).
+              </li>
+            </ul>
+            <p class="source-note">
+              Le fonti devono essere ricontrollate periodicamente e integrate con indicazioni nazionali,
+              RCP del prodotto utilizzato e linee guida pertinenti alla patologia del paziente.
+            </p>
+          </details>
+        </div>
+      </article>
+
+      <aside class="disclaimer">
+        <strong>Informazioni sull'utilizzo.</strong>
+        Questo strumento ha finalità esclusivamente informative e di supporto alla consultazione.
+        Non sostituisce la valutazione clinica individuale, la scheda tecnica del medicinale,
+        le raccomandazioni vaccinali vigenti o il parere dello specialista curante.
+        Le raccomandazioni possono cambiare nel tempo.
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const search = document.getElementById('drugSearch');
+    const vaccine = document.getElementById('vaccineSelect');
+    const result = document.getElementById('result');
+    const empty = document.getElementById('emptyMessage');
+    const general = document.getElementById('generalContent');
+    const mpr = document.getElementById('mprContent');
+
+    function updateDrug() {
+      const value = search.value.trim().toLowerCase();
+      const isRituximab = value === 'rituximab' || value === 'rituxan' || value === 'mabthera' || value === 'truxima';
+
+      if (!value) {
+        result.classList.remove('visible');
+        vaccine.disabled = true;
+        vaccine.value = '';
+        empty.style.display = 'none';
+        return;
+      }
+
+      if (isRituximab) {
+        empty.style.display = 'none';
+        vaccine.disabled = false;
+        if (!vaccine.value) vaccine.value = 'all';
+        result.classList.add('visible');
+        updateVaccine();
+      } else {
+        result.classList.remove('visible');
+        vaccine.disabled = true;
+        vaccine.value = '';
+        empty.style.display = 'block';
+      }
+    }
+
+    function updateVaccine() {
+      if (vaccine.value === 'mpr') {
+        general.style.display = 'none';
+        mpr.style.display = 'block';
+      } else {
+        general.style.display = 'block';
+        mpr.style.display = 'none';
+      }
+    }
+
+    search.addEventListener('input', updateDrug);
+    search.addEventListener('change', updateDrug);
+    vaccine.addEventListener('change', updateVaccine);
+  </script>
+</body>
+</html>
